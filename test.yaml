@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-fs
+spec:
+  storageClassName: harvester
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-block
+spec:
+  storageClassName: harvester
+  volumeMode: Block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: task-pv-pod
+spec:
+  volumes:
+    - name: pvc-fs
+      persistentVolumeClaim:
+        claimName: pvc-fs
+    - name: block
+      persistentVolumeClaim:
+        claimName: pvc-block
+  containers:
+    - name: task-pv-container
+      image: nginx
+      volumeMounts:
+        - mountPath: "/mnt/harvester-fs"
+          name: pvc-fs
+      volumeDevices:
+        - name: block
+          devicePath: /dev/xvda
